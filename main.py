@@ -7,7 +7,7 @@ class Game:
     def fill_column(self, c):
         if not 0 <= c < len(self.board):
             raise ValueError()
-        for i in range(len(self.board[c]) - 1, -1, -1):  # walk reverse
+        for i in self._range_reverse(len(self.board[c])):
             if self.board[c][i] == 0:
                 self.board[c][i] = self.player
                 break
@@ -19,14 +19,19 @@ class Game:
         sections = str([
             *self.board,  # columns
             *[[column[r] for column in self.board] for r in range(len(self.board[0]))],  # rows
-            *[[self.board[c][r] if r < len(self.board[0]) else 0 for r, c in enumerate(range(c, len(self.board)))] for c in range(len(self.board))],  # diagonals (column wise)
-            *[[self.board[c][r] for c, r in enumerate(range(r, len(self.board[0])))] for r in range(len(self.board[0]))],  # diagonals (row wise)
+            *[[self.board[c][r] if r < len(self.board[0]) else 0 for r, c in enumerate(range(c, len(self.board)))] for c in range(len(self.board))],  # diagonals (top left to bottom right, column wise)
+            *[[self.board[c][r] for c, r in enumerate(range(r, len(self.board[0])))] for r in range(len(self.board[0]))],  # diagonals (top left to bottom right, row wise)
+            *[[self.board[c][r] if r < len(self.board[0]) else 0 for r, c in enumerate(self._range_reverse(c+1))] for c in self._range_reverse(len(self.board))],  # diagonals (top right to bottom left, column wise)
+            *[[self.board[len(self.board) - 1 - c][r] for c, r in enumerate(range(r, len(self.board[0])))] for r in range(len(self.board[0]))],  # diagonals (top right to bottom left, row wise)
         ])
         for player in [1, -1]:
             if str([player] * 4)[1:-1] in sections:
                 return player  # winner
         if min([column[0] for column in self.board]) != 0:
             return 0  # draw
+
+    def _range_reverse(self, stop):
+        return range(stop - 1, -1, -1)
 
 
 class Terminal:
